@@ -1,0 +1,2 @@
+                     ELM (bt send) -> arduino (bt receive) -> bar
+laptop -> OBD2 emulator -> bt send -> arduino (bt receive) -> bar
