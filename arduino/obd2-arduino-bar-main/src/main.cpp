@@ -11,7 +11,7 @@ CRGB leds[LED_COUNT];
 
 int rpmEmu = 2000;
 int kphEmu = 80;
-int throttleEmu = 30; //in %
+int throttleEmu = 0.3; //min 0, max 1
 
 
 
@@ -95,7 +95,7 @@ void loop() {
 
   //code
 
-  FastLED.clear();
+  
 
   
 
@@ -105,11 +105,16 @@ void loop() {
   //fill_solid(&leds[0], kphMap, CRGB(120,120,120)); Speed Bar
 
   //currently developing... RPM display
-  leds[rpmMap] = CRGB::Red;
- 
 
 
+  
+  //if RPM is increasing...
+  fadeToBlackBy(leds, LED_COUNT,70);
+  //else if RPM is decreasing...
+  fadeToBlackBy(leds, LED_COUNT,150);
 
+  leds[rpmMap] = CHSV(0, 255, 255);
+    
   FastLED.show();
 
 
