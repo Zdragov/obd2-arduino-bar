@@ -104,10 +104,8 @@ void loop() {
 
   //fill_solid(&leds[0], kphMap, CRGB(120,120,120)); Speed Bar
 
-  //currently developing... RPM display
+  //RPM display start
 
-
-  
   //if RPM is increasing...
   fadeToBlackBy(leds, LED_COUNT,70);
   //else if RPM is decreasing...
@@ -117,6 +115,24 @@ void loop() {
     
   FastLED.show();
 
+  //RPM display end
+
+  //Speedometer display Start
+
+  FastLED.clear();
+
+  fill_solid(&leds[0], kphMap, CRGB(120,120,120));
+
+  leds[20] = CRGB::Yellow;
+  leds[40] = CRGB::Yellow;
+  leds[50] = CRGB::Green;
+  leds[60] = CRGB::Yellow;
+  leds[80] = CRGB::Yellow;
+  leds[100] = CRGB::Green;
+
+  FastLED.show();
+
+  //Speedometer display End
 
   delay(300);
 }
