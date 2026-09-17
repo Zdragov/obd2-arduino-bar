@@ -99,8 +99,8 @@ void loop() {
 
   
 
-  kphMap = map(kphRead, 0, 120, 0, 60);
-  rpmMap = map(rpmRead, 0, 7000, 0, 60);
+  kphMap = constrain(map(kphRead, 0, 120, 0, LED_COUNT-1), 0, LED_COUNT-1);
+  rpmMap = constrain(map(rpmRead, 0, 7000, 0, LED_COUNT-1), 0, LED_COUNT-1);
 
   //fill_solid(&leds[0], kphMap, CRGB(120,120,120)); Speed Bar
 
@@ -123,16 +123,42 @@ void loop() {
 
   fill_solid(&leds[0], kphMap, CRGB(120,120,120));
 
-  leds[20] = CRGB::Yellow;
-  leds[40] = CRGB::Yellow;
-  leds[50] = CRGB::Green;
-  leds[60] = CRGB::Yellow;
-  leds[80] = CRGB::Yellow;
-  leds[100] = CRGB::Green;
+  leds[10] = CRGB::Yellow; //20kph
+  leds[20] = CRGB::Yellow; //40kph
+  leds[25] = CRGB::Green; //50kph
+  leds[30] = CRGB::Yellow; //60kph
+  leds[40] = CRGB::Yellow; //80kph
+  leds[50] = CRGB::Green; //100kph
 
   FastLED.show();
 
   //Speedometer display End
+
+  //Water Temp display Start (Only this is displayed on startup. Disappears when speed goes above 10kph)
+
+  engineTempMap = map(engineTempRead, 0, 120, 0, LED_COUNT-1);
+
+  
+  //meter goes from 20 to 120
+  //20-40c = too cold
+  //40-70c = cold but OK
+  //70-100c = OK
+  //100-120c = too hot
+
+  //if engine temp is detected,
+  fill_solid(&leds[0], 12, CHSV(180,100,100));
+  fill_solid(&leds[12], 18, CHSV(250,100,100));
+  fill_solid(&leds[45], 15, CHSV(0,100,100));
+
+  leds[engineTempMap] = CHSV(0,0,100);
+
+  if (engineTempRead > 105){
+    //flash red zone
+  }
+
+  //Water Temp display End
+
+
 
   delay(300);
 }
