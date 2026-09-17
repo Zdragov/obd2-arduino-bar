@@ -13,8 +13,8 @@ Description description description description description description descript
 ### To-do
 
 - [ ] Ensure bluetooth connection
-- [ ] RPM Display
-- [ ] Speed Display
+- [x] RPM Display
+- [x] Speed Display
 - [ ] Brightness reading
 - [ ] Auto switch between displays
 - [ ] Display switch FXs
