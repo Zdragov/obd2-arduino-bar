@@ -36,6 +36,7 @@ int emuInfoSet(int cmdSent,int spd,int rpm,int throttle,int engineTemp) {
 
 int rpmMap;
 int kphMap;
+int engineTempMap;
 
 
 
@@ -106,6 +107,7 @@ void loop() {
 
 
 
+
   if (Serial.available() != 0) {
     char receivedCmd = Serial.read();
 
@@ -155,15 +157,15 @@ void loop() {
 
 
       case '1':
-        emuCmd = 101;
+        displayCmd = 1;
         Serial.println("Showing RPM");
         break;
       case '2':
-        emuCmd = 102;
+        displayCmd = 2;
         Serial.println("Showing KPH");
         break;
       case '3':
-        emuCmd = 103;
+        displayCmd = 3;
         Serial.println("Showing Temp");
         break;
       default:
@@ -221,25 +223,74 @@ void loop() {
       throttleEmu = 20;
     } 
   } else if (emuCmd == 5) {
-
+    if (engineTempEmu < 90) {
+      engineTempEmu++;
+      rpmEmu = rpmEmu - 10
     //do X
   }
 
   switch (displayCmd) {
     case 1:
     Serial.print("abcd");
-      //RPM display start
+    FastLED.clear();
+    //RPM display start
 
     //if RPM is increasing...
     fadeToBlackBy(leds, LED_COUNT,70);
     //else if RPM is decreasing...
-    fadeToBlackBy(leds, LED_COUNT,150);
+    //fadeToBlackBy(leds, LED_COUNT,150);
 
     leds[rpmMap] = CHSV(0, 255, 255);
       
     FastLED.show();
 
     //RPM display end
+    break;
+
+    case 2:
+    //Speedometer display Start
+
+    FastLED.clear();
+
+    fill_solid(&leds[0], kphMap, CRGB(120,120,120));
+
+    leds[10] = CRGB::Yellow; //20kph
+    leds[20] = CRGB::Yellow; //40kph
+    leds[25] = CRGB::Green; //50kph
+    leds[30] = CRGB::Yellow; //60kph
+    leds[40] = CRGB::Yellow; //80kph
+    leds[50] = CRGB::Green; //100kph
+
+    FastLED.show();
+
+    //Speedometer display End
+    break;
+
+    case 3:
+
+    //Water Temp display Start (Only this is displayed on startup. Disappears when speed goes above 10kph)
+    
+    //meter goes from 20 to 120
+    //20-40c = too cold
+    //40-70c = cold but OK
+    //70-100c = OK
+    //100-120c = too hot
+
+    //if engine temp is detected,
+    fill_solid(&leds[0], 12, CHSV(180,100,100));
+    fill_solid(&leds[12], 18, CHSV(250,100,100));
+    fill_solid(&leds[45], 15, CHSV(0,100,100));
+
+    leds[engineTempMap] = CHSV(0,0,100);
+
+    if (engineTempRead > 105){
+      //flash red zone
+    }
+
+    break;
+
+    //Water Temp display End
+
   }
 
 
@@ -262,53 +313,6 @@ void loop() {
 
   
 
-  kphMap = constrain(map(kphRead, 0, 120, 0, LED_COUNT-1), 0, LED_COUNT-1);
-  rpmMap = constrain(map(rpmRead, 0, 7000, 0, LED_COUNT-1), 0, LED_COUNT-1);
-
-  //fill_solid(&leds[0], kphMap, CRGB(120,120,120)); Speed Bar
-
-
-
-  //Speedometer display Start
-
-  FastLED.clear();
-
-  fill_solid(&leds[0], kphMap, CRGB(120,120,120));
-
-  leds[10] = CRGB::Yellow; //20kph
-  leds[20] = CRGB::Yellow; //40kph
-  leds[25] = CRGB::Green; //50kph
-  leds[30] = CRGB::Yellow; //60kph
-  leds[40] = CRGB::Yellow; //80kph
-  leds[50] = CRGB::Green; //100kph
-
-  FastLED.show();
-
-  //Speedometer display End
-
-  //Water Temp display Start (Only this is displayed on startup. Disappears when speed goes above 10kph)
-
-  engineTempMap = map(engineTempRead, 0, 120, 0, LED_COUNT-1);
-
-  
-  //meter goes from 20 to 120
-  //20-40c = too cold
-  //40-70c = cold but OK
-  //70-100c = OK
-  //100-120c = too hot
-
-  //if engine temp is detected,
-  fill_solid(&leds[0], 12, CHSV(180,100,100));
-  fill_solid(&leds[12], 18, CHSV(250,100,100));
-  fill_solid(&leds[45], 15, CHSV(0,100,100));
-
-  leds[engineTempMap] = CHSV(0,0,100);
-
-  if (engineTempRead > 105){
-    //flash red zone
-  }
-
-  //Water Temp display End
 
 
 
