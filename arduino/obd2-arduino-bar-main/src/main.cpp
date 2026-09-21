@@ -177,7 +177,7 @@ void loop()
       rpmEmu = 2250;
       throttleEmu = 20;
     }
-  break :
+  break ;
 
       case 2:
     // Emulate braking from 100kph
@@ -186,7 +186,7 @@ void loop()
       rpmEmu = 1750;
       kphEmu = kphEmu - 2;
     }
-  break :
+  break ;
 
       case 3:
     // Emulate speed bouncing from 95kph to 105kph
