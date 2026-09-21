@@ -353,3 +353,16 @@ fill_solid(leds, NUM_LEDS, CHSV(160, 255, 255));
 */
 
 // ctrl shift i to auto indent
+
+
+
+
+/*
+
+TODO
+
+Half light brightness when in between values'
+
+Finalize view
+
+*/
