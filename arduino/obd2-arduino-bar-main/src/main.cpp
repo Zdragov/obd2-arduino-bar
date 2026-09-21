@@ -158,9 +158,10 @@ void loop()
     }
   }
 
-switch (emuCmd) {
-	case 1: 
-	if (kphEmu < 100)
+  switch (emuCmd)
+  {
+  case 1:
+    if (kphEmu < 100)
     {
       rpmEmu = rpmEmu + 100;
       kphEmu = kphEmu + 2;
@@ -176,19 +177,19 @@ switch (emuCmd) {
       rpmEmu = 2250;
       throttleEmu = 20;
     }
-    break:
-    
-    case 2:
+  break :
+
+      case 2:
     // Emulate braking from 100kph
     if (kphEmu > 0)
     {
       rpmEmu = 1750;
       kphEmu = kphEmu - 2;
     }
-    break:
-  
-  	case 3:
-  	// Emulate speed bouncing from 95kph to 105kph
+  break :
+
+      case 3:
+    // Emulate speed bouncing from 95kph to 105kph
     if (emuCruiseAccelerating == 1)
     {
       kphEmu = kphEmu + 1;
@@ -210,8 +211,8 @@ switch (emuCmd) {
       }
     }
     break;
-    
-    case 4:
+
+  case 4:
     // Emulate hard acceleration
     if (kphEmu < 100)
     {
@@ -230,16 +231,15 @@ switch (emuCmd) {
       throttleEmu = 20;
     }
     break;
-    
-    case 5:
-        if (engineTempEmu < 90)
+
+  case 5:
+    if (engineTempEmu < 90)
     {
       engineTempEmu++;
       rpmEmu = rpmEmu - 10;
       // do X
     }
-}
-
+  }
 
   switch (displayCmd)
   {
@@ -310,8 +310,8 @@ switch (emuCmd) {
     // Water Temp display End
   }
 
-  //compile every layer into one
-  
+  // compile every layer into one
+
   // serial print
 
   Serial.print(rpmRead);
