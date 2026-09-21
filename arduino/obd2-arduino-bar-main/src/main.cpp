@@ -12,18 +12,32 @@ CRGB leds[LED_COUNT];
 int rpmEmu = 2000;
 int kphEmu = 80;
 int throttleEmu = 20; //0 to 100
+int engineTempEmu = 25;
 int emuCmd = 0;
+int displayCmd = 0;
 
 int emuCruiseAccelerating = 1;
 
 
 
+
 int rpmRead = rpmEmu;
 int kphRead = kphEmu;
+int throttleRead = throttleEmu;
+int engineTempRead = engineTempEmu;
+
+int emuInfoSet(int cmdSent,int spd,int rpm,int throttle,int engineTemp) {
+  emuCmd = cmdSent;
+  kphEmu = 100;
+  rpmEmu = 2250;
+  throttleEmu = 20;
+  engineTempEmu = 90;
+}
 
 int rpmMap;
 int kphMap;
-int throttleRead = throttleEmu;
+
+
 
 int lightSensor = 50;
 
@@ -101,6 +115,7 @@ void loop() {
         Serial.println("Slowly Accelerating...");
         kphEmu = 0;
         rpmEmu = 2000;
+        engineTempEmu = 90;
         break;
       case 'b':
         emuCmd = 2;
@@ -108,6 +123,7 @@ void loop() {
         kphEmu = 100;
         rpmEmu = 2000;
         throttleEmu = 1;
+        engineTempEmu = 90;
         break;
       case 'c':
         emuCmd = 3;
@@ -115,12 +131,40 @@ void loop() {
         kphEmu = 100;
         rpmEmu = 2250;
         throttleEmu = 20;
+        engineTempEmu = 90;
         break;
       case 'd':
         emuCmd = 4;
         Serial.println("Quickly Accelerating...");
         kphEmu = 0;
         rpmEmu = 2000;
+        engineTempEmu = 90;
+        break;
+      case 'e':
+        emuCmd = 5;
+        Serial.println("Cold starting...");
+        kphEmu = 0;
+        rpmEmu = 2250;
+        throttleEmu = 5;
+        engineTempEmu = 25;
+        break;
+        
+        
+
+
+
+
+      case '1':
+        emuCmd = 101;
+        Serial.println("Showing RPM");
+        break;
+      case '2':
+        emuCmd = 102;
+        Serial.println("Showing KPH");
+        break;
+      case '3':
+        emuCmd = 103;
+        Serial.println("Showing Temp");
         break;
       default:
         break;
@@ -128,7 +172,7 @@ void loop() {
 
   }
 
-  if (emuCmd == 1) { // Emulate casual acceleration
+  if (emuCmd == 1) { // Emulate casual acceleration          ALSO, convert this entire thing to switch case at some point
     
     if (kphEmu < 100) {
       rpmEmu = rpmEmu + 100;
@@ -176,6 +220,26 @@ void loop() {
       rpmEmu =  2250;
       throttleEmu = 20;
     } 
+  } else if (emuCmd == 5) {
+
+    //do X
+  }
+
+  switch (displayCmd) {
+    case 1:
+    Serial.print("abcd");
+      //RPM display start
+
+    //if RPM is increasing...
+    fadeToBlackBy(leds, LED_COUNT,70);
+    //else if RPM is decreasing...
+    fadeToBlackBy(leds, LED_COUNT,150);
+
+    leds[rpmMap] = CHSV(0, 255, 255);
+      
+    FastLED.show();
+
+    //RPM display end
   }
 
 
@@ -203,18 +267,7 @@ void loop() {
 
   //fill_solid(&leds[0], kphMap, CRGB(120,120,120)); Speed Bar
 
-  //RPM display start
 
-  //if RPM is increasing...
-  fadeToBlackBy(leds, LED_COUNT,70);
-  //else if RPM is decreasing...
-  fadeToBlackBy(leds, LED_COUNT,150);
-
-  leds[rpmMap] = CHSV(0, 255, 255);
-    
-  FastLED.show();
-
-  //RPM display end
 
   //Speedometer display Start
 
