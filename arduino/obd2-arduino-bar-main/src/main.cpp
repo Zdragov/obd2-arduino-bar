@@ -16,6 +16,8 @@ int engineTempEmu = 25;
 int emuCmd = 0;
 int displayCmd = 0;
 
+String lfsData = "";
+
 int emuCruiseAccelerating = 1;
 
 int rpmRead = rpmEmu;
@@ -39,6 +41,31 @@ int engineTempMap;
 int lightSensor = 50;
 
 // Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+void lfsGetData() {
+  while (Serial.available() > 0) {
+    char lfsRead = Serial.read();
+
+    if (lfsRead == '\n') { //
+      int separator1 = lfsData.indexOf(','); //separators find the commas in the LFS data and separate them. finds first comma and notes down location
+      int separator2 = lfsData.indexOf(',', separator1 + 1); //finds second comma and notes down location
+      int separator3 = lfsData.indexOf(',', separator2 + 1); //finds third comma and notes down location
+      
+      if (separator1 > 0 && separator2 > 0 && separator3 > 0) { //if these separators exist, continue onwards
+        kphEmu = lfsData.substring(0, separator1).toFloat(); //if the data is 10,13,50    this will cut out 10 out of that string
+        rpmEmu = lfsData.substring(separator1+1,separator2).toFloat();
+        engineTempEmu = lfsData.substring(separator2+1,separator3).toFloat();
+        throttleEmu = lfsData.substring(separator3+1).toFloat();
+
+      }
+
+      lfsData = ""; //reset the Data
+    } else {
+      lfsData = lfsData + lfsRead;
+    }
+  } // closes serial
+}
+
 
 void setup()
 {
@@ -65,15 +92,14 @@ void setup()
   FastLED.show();
   delay(333);
 
-  // int rpmDisplay(
-  // display rpm
-  //)
 }
 
 void loop()
 {
 
   // mock and test data, and serial commands
+
+  lfsGetData();
   rpmRead = rpmEmu;
   kphRead = kphEmu;
 
@@ -158,94 +184,16 @@ void loop()
     }
   }
 
-  switch (emuCmd)
-  {
-  case 1:
-    if (kphEmu < 100)
-    {
-      rpmEmu = rpmEmu + 100;
-      kphEmu = kphEmu + 2;
-      if (rpmEmu > 3000)
-      {
-        rpmEmu = 2000;
-      }
-      throttleEmu = 50;
-    }
-    else
-    {
-      kphEmu = 100;
-      rpmEmu = 2250;
-      throttleEmu = 20;
-    }
-  break ;
+//LFS data goes here
 
-      case 2:
-    // Emulate braking from 100kph
-    if (kphEmu > 0)
-    {
-      rpmEmu = 1750;
-      kphEmu = kphEmu - 2;
-    }
-  break ;
 
-      case 3:
-    // Emulate speed bouncing from 95kph to 105kph
-    if (emuCruiseAccelerating == 1)
-    {
-      kphEmu = kphEmu + 1;
-      rpmEmu = rpmEmu + 50;
-      throttleEmu = 23;
-      if (kphEmu > 105)
-      {
-        emuCruiseAccelerating = 0;
-      }
-    }
-    else if (emuCruiseAccelerating == 0)
-    {
-      kphEmu = kphEmu - 1;
-      rpmEmu = rpmEmu - 50;
-      throttleEmu = 17;
-      if (kphEmu < 95)
-      {
-        emuCruiseAccelerating = 1;
-      }
-    }
-    break;
 
-  case 4:
-    // Emulate hard acceleration
-    if (kphEmu < 100)
-    {
-      rpmEmu = rpmEmu + 500;
-      kphEmu = kphEmu + 5;
-      if (rpmEmu > 7000)
-      {
-        rpmEmu = 4000;
-      }
-      throttleEmu = 90;
-    }
-    else
-    {
-      kphEmu = 100;
-      rpmEmu = 2250;
-      throttleEmu = 20;
-    }
-    break;
-
-  case 5:
-    if (engineTempEmu < 90)
-    {
-      engineTempEmu++;
-      rpmEmu = rpmEmu - 10;
-      // do X
-    }
-  }
 
   switch (displayCmd)
   {
   case 1:
     Serial.print("abcd");
-    FastLED.clear();
+    // FastLED.clear();
     // RPM display start
 
     // if RPM is increasing...
