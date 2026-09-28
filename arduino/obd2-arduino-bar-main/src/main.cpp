@@ -102,6 +102,8 @@ void loop()
   lfsGetData();
   rpmRead = rpmEmu;
   kphRead = kphEmu;
+  engineTempRead = engineTempEmu;
+  throttleRead = throttleEmu;
 
   kphMap = constrain(map(kphRead, 0, 120, 0, LED_COUNT - 1), 0, LED_COUNT - 1);
   rpmMap = constrain(map(rpmRead, 0, 7000, 0, LED_COUNT - 1), 0, LED_COUNT - 1);
@@ -122,67 +124,7 @@ void loop()
 
   */
 
-  if (Serial.available() != 0)
-  {
-    char receivedCmd = Serial.read();
-
-    switch (receivedCmd)
-    {
-    case 'a':
-      emuCmd = 1;
-      Serial.println("Slowly Accelerating...");
-      kphEmu = 0;
-      rpmEmu = 2000;
-      engineTempEmu = 90;
-      break;
-    case 'b':
-      emuCmd = 2;
-      Serial.println("Braking...");
-      kphEmu = 100;
-      rpmEmu = 2000;
-      throttleEmu = 1;
-      engineTempEmu = 90;
-      break;
-    case 'c':
-      emuCmd = 3;
-      Serial.println("Cruising (95-105kph)...");
-      kphEmu = 100;
-      rpmEmu = 2250;
-      throttleEmu = 20;
-      engineTempEmu = 90;
-      break;
-    case 'd':
-      emuCmd = 4;
-      Serial.println("Quickly Accelerating...");
-      kphEmu = 0;
-      rpmEmu = 2000;
-      engineTempEmu = 90;
-      break;
-    case 'e':
-      emuCmd = 5;
-      Serial.println("Cold starting...");
-      kphEmu = 0;
-      rpmEmu = 2650;
-      throttleEmu = 5;
-      engineTempEmu = 25;
-      break;
-
-    case '1':
-      displayCmd = 1;
-      Serial.println("Showing RPM");
-      break;
-    case '2':
-      displayCmd = 2;
-      Serial.println("Showing KPH");
-      break;
-    case '3':
-      displayCmd = 3;
-      Serial.println("Showing Temp");
-      break;
-    default:
-      break;
-    }
-  }
+displayCmd = 1;
 
 //LFS data goes here
 
