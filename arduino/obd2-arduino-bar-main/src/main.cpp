@@ -1,11 +1,15 @@
 #include <Arduino.h>
 // #include <Adafruit_NeoPixel.h>
 #include <FastLED.h>
+#include <SoftwareSerial.h>
 
 #define LED_PIN 9
 #define LED_COUNT 60
 #define LED_TYPE WS2812B // i think this is it?
 #define COLOUR_ORDER GRB
+
+#define BLUETOOTH_MODE 0
+SoftwareSerial bluetooth(4, 3);   // RX = pin 4, TX = pin 3
 
 CRGB leds[LED_COUNT];
 
@@ -16,7 +20,7 @@ int engineTempEmu = 25;
 int emuCmd = 0;
 int displayCmd = 0;
 
-String lfsData = "";
+
 
 int emuCruiseAccelerating = 1;
 
@@ -42,28 +46,33 @@ int lightSensor = 50;
 
 // Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
+char readBuffer[48];
+uint8_t readLength = 0;
+
 void lfsGetData() {
   while (Serial.available() > 0) {
     char lfsRead = Serial.read();
+    if (lfsRead == '\n') {
+      readBuffer[readLength] = 0;
+      readLength = 0;
 
-    if (lfsRead == '\n') { //
-      int separator1 = lfsData.indexOf(','); //separators find the commas in the LFS data and separate them. finds first comma and notes down location
-      int separator2 = lfsData.indexOf(',', separator1 + 1); //finds second comma and notes down location
-      int separator3 = lfsData.indexOf(',', separator2 + 1); //finds third comma and notes down location
-      
-      if (separator1 > 0 && separator2 > 0 && separator3 > 0) { //if these separators exist, continue onwards
-        kphEmu = lfsData.substring(0, separator1).toFloat(); //if the data is 10,13,50    this will cut out 10 out of that string
-        rpmEmu = lfsData.substring(separator1+1,separator2).toFloat();
-        engineTempEmu = lfsData.substring(separator2+1,separator3).toFloat();
-        throttleEmu = lfsData.substring(separator3+1).toFloat();
+      char *sepA = strtok(readBuffer, ",");
+      char *sepB = strtok(NULL, ",");
+      char *sepC = strtok(NULL, ",");
+      char *sepD = strtok(NULL, ",");
 
+      if (sepA && sepB && sepC && sepD) {
+        kphEmu = atof(sepA);
+        rpmEmu = atol(sepB);
+        engineTempEmu = atof(sepC);
+        throttleEmu = atof(sepD);
       }
-
-      lfsData = ""; //reset the Data
+    } else if (readLength < sizeof(readBuffer) - 1) {
+      readBuffer[readLength++] = lfsRead;
     } else {
-      lfsData = lfsData + lfsRead;
+      readLength = 0;   // overflow, discard
     }
-  } // closes serial
+  }
 }
 
 
@@ -98,7 +107,8 @@ void loop()
 {
 
   // mock and test data, and serial commands
-
+  EVERY_N_MILLISECONDS(40) {
+  
   lfsGetData();
   rpmRead = rpmEmu;
   kphRead = kphEmu;
@@ -134,7 +144,7 @@ displayCmd = 1;
   switch (displayCmd)
   {
   case 1:
-    Serial.print("abcd");
+    
     // FastLED.clear();
     // RPM display start
 
@@ -204,16 +214,16 @@ displayCmd = 1;
 
   // serial print
 
-  Serial.print(rpmRead);
-  Serial.println("rpm");
+  //Serial.print(rpmRead);
+  //Serial.println("rpm");
 
-  Serial.print(kphRead);
-  Serial.println("kph");
-  Serial.println("");
+  //Serial.print(kphRead);
+  //Serial.println("kph");
+  //Serial.println("");
 
   // code
 
-  delay(300);
+}
 }
 
 /*
