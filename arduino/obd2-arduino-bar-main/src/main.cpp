@@ -26,21 +26,16 @@ const int rpmMax = 7000;
 const int rightSideDivisor = sq(rpmMax / 100) / 15;
 int changeInKph = 0;
 
-int kphEmu = 80;
+float kphEmu = 80;
 int throttleEmu = 20; // 0 to 100
 int engineTempEmu = 25;;
 int displayCmd = 0;
 
 int rpmRead = rpmEmu;
-int kphRead = kphEmu;
+float kphRead = kphEmu;
 int throttleRead = throttleEmu;
 int engineTempRead = engineTempEmu;
 
-int rpmMap;
-int kphMap;
-int engineTempMap;
-
-int lightSensor = 50;
 
 char readBuffer[48];
 uint8_t readLength = 0;
@@ -63,7 +58,7 @@ void lfsGetData()
       if (sepA && sepB && sepC && sepD)
       {
         kphEmu = atof(sepA);
-        rpmEmu = atol(sepB);
+        rpmEmu = atof(sepB);
         engineTempEmu = atof(sepC);
         throttleEmu = atof(sepD);
       }
@@ -151,7 +146,7 @@ void loop()
       leftSideMax =
           constrain(
               29 + int(
-                       -0.1 * kphRead * (1 - (throttleRead / 100.0))),
+                       (constrain(changeInKph, -5, 0)*15)),
               0, LED_COUNT / 2 - 1);
 
       leds[leftSideMax] = CRGB::Green;
@@ -170,7 +165,7 @@ void loop()
       // else if RPM is decreasing...
       // fadeToBlackBy(leds, LED_COUNT,150);
 
-      leds[rpmMap] = CHSV(0, 255, 255);
+      //leds[rpmMap] = CHSV(0, 255, 255);
 
       FastLED.show();
 
@@ -182,7 +177,7 @@ void loop()
 
       FastLED.clear();
 
-      fill_solid(&leds[0], kphMap, CRGB(120, 120, 120));
+      //fill_solid(&leds[0], kphMap, CRGB(120, 120, 120));
 
       leds[10] = CRGB::Yellow; // 20kph
       leds[20] = CRGB::Yellow; // 40kph
@@ -213,7 +208,7 @@ void loop()
       fill_solid(&leds[12], 18, CHSV(250, 255, 100));
       fill_solid(&leds[45], 15, CHSV(0, 255, 100));
 
-      leds[engineTempMap] = CHSV(0, 0, 100);
+      //leds[engineTempMap] = CHSV(0, 0, 100);
 
       if (engineTempRead > 105)
       {
