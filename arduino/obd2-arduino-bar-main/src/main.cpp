@@ -14,6 +14,14 @@ SoftwareSerial bluetooth(4, 3);   // RX = pin 4, TX = pin 3
 CRGB leds[LED_COUNT];
 
 int rpmEmu = 2000;
+
+int rightSideMax = 1; //where 1 is center (LED 30) and 29 is fully right (LED 59)
+int leftSideMax = 1; // where 1 is center (LED 29) and 29 is fully left  (LED 0)
+
+
+int rpmMax = 7000;
+
+
 int kphEmu = 80;
 int throttleEmu = 20; // 0 to 100
 int engineTempEmu = 25;
@@ -56,7 +64,7 @@ void lfsGetData() {
       readBuffer[readLength] = 0;
       readLength = 0;
 
-      char *sepA = strtok(readBuffer, ",");
+      char *sepA = strtok(readBuffer, ","); //data is sent as XX,XX,XX,XX. this separates it
       char *sepB = strtok(NULL, ",");
       char *sepC = strtok(NULL, ",");
       char *sepD = strtok(NULL, ",");
@@ -143,6 +151,30 @@ displayCmd = 1;
 
   switch (displayCmd)
   {
+
+  case 0:
+    // everything!!!
+
+    //right bar = ((throttleRead*2.5)+((sq(b)/39200000)*2))*6+30
+    //left bar = -0.015*kphRead*(1+a)
+
+    fill_solid(
+      &leds[30],
+      kphMap,
+      CRGB(120, 120, 120));
+    
+    rightSideMax = 
+      constrain(
+        int(
+        (
+          ((throttleRead*30)/1000)
+          +( (sq(rpmRead/100)/sq(rpmMax/100)) *2)
+        )
+        *6),
+        0, LED_COUNT-1);
+      
+
+      
   case 1:
     
     // FastLED.clear();
