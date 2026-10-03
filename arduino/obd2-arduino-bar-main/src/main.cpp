@@ -13,13 +13,19 @@ SoftwareSerial bluetooth(4, 3);   // RX = pin 4, TX = pin 3
 
 CRGB leds[LED_COUNT];
 
-int rpmEmu = 2000;
+int rpmEmu = 2000; 
 
 int rightSideMax = 1; //where 1 is center (LED 30) and 29 is fully right (LED 59)
 int leftSideMax = 1; // where 1 is center (LED 29) and 29 is fully left  (LED 0)
 
+unsigned long timePrevious = 0;   // to keep track of deceleration, fake "braking" stat
+int kphPrevious = 0;              
+const int SAMPLE_INTERVAL = 100;  
 
-int rpmMax = 7000;
+
+const int rpmMax = 7000; 
+const int rightSideDivisor = sq(rpmMax/100)/15;
+int changeInKph = 0;
 
 
 int kphEmu = 80;
@@ -115,7 +121,7 @@ void loop()
 {
 
   // mock and test data, and serial commands
-  EVERY_N_MILLISECONDS(40) {
+  EVERY_N_MILLISECONDS(100) {
   
   lfsGetData();
   rpmRead = rpmEmu;
@@ -127,24 +133,21 @@ void loop()
   rpmMap = constrain(map(rpmRead, 0, 7000, 0, LED_COUNT - 1), 0, LED_COUNT - 1);
   engineTempMap = constrain(map(engineTempRead, 0, 120, 0, LED_COUNT - 1), 0, LED_COUNT - 1);
 
-  /*
-    if (rpmEmu < 7000) {
-      rpmEmu = rpmEmu + 100;
-    } else {
-      rpmEmu = 2000;
-    }
 
-    if (kphEmu < 100) {
-      kphEmu = kphEmu + 2;
-    } else {
-      kphEmu = 0;
-    }
 
-  */
+  displayCmd = 0;
 
-displayCmd = 1;
 
-//LFS data goes here
+
+  unsigned long timeCurrent = millis();
+
+  changeInKph = kphRead - kphPrevious;
+
+  kphPrevious = kphRead;      //reset ready for next read
+  timePrevious = timeCurrent;
+
+
+
 
 
 
@@ -155,20 +158,17 @@ displayCmd = 1;
   case 0:
     // everything!!!
 
-    //right bar = ((throttleRead*2.5)+((sq(b)/39200000)*2))*6+30
-    //left bar = -0.015*kphRead*(1+a)
+    //right bar = ((throttleRead*2.5)+((sq(b)/39200000)*2))*6+30        ORIGINAL FORMULA
+    //left bar = -0.015*kphRead*(1+a)                                   ORIGINAL FORMULA
 
-    fill_solid(
-      &leds[30],
-      kphMap,
-      CRGB(120, 120, 120));
+    FastLED.clear();
     
     rightSideMax = 
       constrain(
         int(
-        (
+        
           ((throttleRead*3)/20)        //throttle fx is limited from 0 to 15
-          +((sq(rpmRead/100)/326)))   //rpm fx      is limited from 0 to 15
+          +((sq(rpmRead/100)/326))   //rpm fx      is limited from 0 to 15
         )
          + 30,
         30, LED_COUNT-1);
@@ -178,7 +178,12 @@ displayCmd = 1;
         29+int(
           -0.1*kphRead*(1-(throttleRead/100.0))
         ),0, LED_COUNT/2-1);
-      
+
+    leds[leftSideMax] = CRGB::Green;
+    leds[rightSideMax] = CRGB::Blue;
+
+    FastLED.show();
+    break;
 
       
   case 1:
