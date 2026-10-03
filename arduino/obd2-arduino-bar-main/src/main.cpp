@@ -167,11 +167,17 @@ displayCmd = 1;
       constrain(
         int(
         (
-          ((throttleRead*30)/1000)
-          +( (sq(rpmRead/100)/sq(rpmMax/100)) *2)
+          ((throttleRead*150)/1000)        //throttle fx is limited from 0 to 15
+          +((sq(rpmRead/100)*6/(980*2)))   //rpm fx      is limited from 0 to 15
         )
-        *6),
-        0, LED_COUNT-1);
+        ) + 30,
+        30, LED_COUNT-1);
+
+    leftSideMax = 
+      constrain(
+        29+int(
+          -0.1*kphRead*(1-(throttleRead/100.0))
+        ),0, LED_COUNT/2-1);
       
 
       
