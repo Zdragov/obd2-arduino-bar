@@ -3,13 +3,13 @@
 #include <FastLED.h>
 #include <SoftwareSerial.h>
 
-#define LED_PIN 9
+#define LED_PIN A0
 #define LED_COUNT 60
 #define LED_TYPE WS2812B // i think this is it?
 #define COLOUR_ORDER GRB
 
 #define BLUETOOTH_MODE 0
-SoftwareSerial bluetooth(4, 3); // RX = pin 4, TX = pin 3
+SoftwareSerial bluetooth(5, 3); // RX = pin 4, TX = pin 3
 
 CRGB leds[LED_COUNT];
 
@@ -28,10 +28,11 @@ CRGB rightSideFillColour = CRGB::Blue;
 CRGB leftSideFillColour = CRGB::Green;
 
 float changeInKph = 0;
+float smoothChangeInKph=0;
 
 float kphEmu = 80;
-int throttleEmu = 20; // 0 to 100
-int engineTempEmu = 25;;
+int throttleEmu = 0; // 0 to 100
+int engineTempEmu = 25;
 int displayCmd = 0;
 
 int rpmRead = rpmEmu;
@@ -43,7 +44,7 @@ int engineTempRead = engineTempEmu;
 char readBuffer[48];
 uint8_t readLength = 0;
 
-void lfsGetData()
+void lfsGetData() //get data from Outgauge
 {
   while (Serial.available() > 0)
   {
@@ -118,10 +119,14 @@ void loop()
 
     displayCmd = 0;
 
+    
+
     unsigned long timeCurrent = millis();
 
     changeInKph = kphRead - kphPrevious;
+    smoothChangeInKph = smoothChangeInKph * 0.7 + changeInKph * 0.3;
 
+    
     kphPrevious = kphRead; // reset ready for next read
     timePrevious = timeCurrent;
 
@@ -148,7 +153,7 @@ void loop()
       leftSideMax =
           constrain(
               29 + int(
-                       (constrain(changeInKph, -5, 0)*15)),
+                       (constrain(smoothChangeInKph, -5, 0)*15)),
               0, LED_COUNT / 2 - 1);
 
       leds[leftSideMax] = CRGB::Green;
@@ -166,24 +171,27 @@ void loop()
           rightSideFillColour = CRGB(0,0,255);
       }
 
-      fill_solid(&leds[30], rightSideMax-29, rightSideFillColour);
+      uint8_t shiftIndicator = constrain((rightSideMax - 55) * 255L / 4, 0, 255);
+      rightSideFillColour = blend(rightSideFillColour, CRGB::Red, shiftIndicator);
+
 
       for (int i=0;i<6;i++) {
         int curLED = rightSideMax-i;
         if (curLED < 30) {break;}
-        uint8_t alpha = 255 - (i*51);
+        uint8_t alpha = (uint16_t)(255 - (i * 51)) * constrain((rightSideMax - 40) * 255L / 10, 0, 255) / 255;
         leds[curLED] = blend(leds[curLED], CRGB(255,0,0), alpha);
       }
+
 
       
 
       // for left side, passive colour will be green, active colour is undetermined (white temp)
-      if (changeInKph > -0.6) {
+      if (smoothChangeInKph > -0.6) {
         leftSideFillColour = CRGB(0,255,0);
-      } else if (changeInKph > -2.0) {
+      } else if (smoothChangeInKph > -2.0) {
           // scale by 100 to avoid float 
           // -60 = threshold, -200 = full white
-          int v = (int)(-changeInKph * 100 - 60) * 255 / 140;
+          int v = (int)(-smoothChangeInKph * 100 - 60) * 255 / 140;
           v = constrain(v, 0, 255);
           leftSideFillColour = CRGB(v, 255, v);
       } else {
