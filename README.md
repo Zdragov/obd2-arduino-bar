@@ -1,29 +1,3 @@
-# Big text
+## Description
 
-## Medium text
-
-Description description description description description description description description description description description.
-
-### Requirements
-
-* Requirement
-* Requirement
-* Requirement
-
-### To-do
-
-- [ ] Ensure bluetooth connection
-- [x] RPM Display
-- [x] Speed Display
-- [ ] Brightness reading
-- [ ] Auto switch between displays
-- [ ] Display switch FXs
-
-- [ ] Link to racing game for showcase (BeamNG?)
-
-### Steps
-
-Declare different displays Functions in Setup
-
-Switch case between different functions in Loop... don't call the same display Function every loop?
-
+Assignment for uni. It connects to your car and shows your driving performance.
