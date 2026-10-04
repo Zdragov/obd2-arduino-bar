@@ -19,12 +19,15 @@ int rightSideMax = 1; // where 1 is center (LED 30) and 29 is fully right (LED 5
 int leftSideMax = 1;  // where 1 is center (LED 29) and 29 is fully left  (LED 0)
 
 unsigned long timePrevious = 0; // to keep track of deceleration, fake "braking" stat
-int kphPrevious = 0;
+float kphPrevious = 0;
 const int SAMPLE_INTERVAL = 100;
 
 const int rpmMax = 7000;
 const int rightSideDivisor = sq(rpmMax / 100) / 15;
-int changeInKph = 0;
+CRGB rightSideFillColour = CRGB::Blue;
+CRGB leftSideFillColour = CRGB::Green;
+
+float changeInKph = 0;
 
 float kphEmu = 80;
 int throttleEmu = 20; // 0 to 100
@@ -136,7 +139,6 @@ void loop()
       rightSideMax =
           constrain(
               int(
-
                   ((throttleRead * 3) / 20)                  // throttle fx is limited from 0 to 15
                   + ((sq(rpmRead / 100) / rightSideDivisor)) // rpm fx      is limited from 0 to 15
                   ) +
@@ -152,86 +154,51 @@ void loop()
       leds[leftSideMax] = CRGB::Green;
       leds[rightSideMax] = CRGB::Blue;
 
-      FastLED.show();
-      break;
 
-    case 1:
 
-      // FastLED.clear();
-      // RPM display start
-
-      // if RPM is increasing...
-      fadeToBlackBy(leds, LED_COUNT, 70);
-      // else if RPM is decreasing...
-      // fadeToBlackBy(leds, LED_COUNT,150);
-
-      //leds[rpmMap] = CHSV(0, 255, 255);
-
-      FastLED.show();
-
-      // RPM display end
-      break;
-
-    case 2:
-      // Speedometer display Start
-
-      FastLED.clear();
-
-      //fill_solid(&leds[0], kphMap, CRGB(120, 120, 120));
-
-      leds[10] = CRGB::Yellow; // 20kph
-      leds[20] = CRGB::Yellow; // 40kph
-      leds[25] = CRGB::Green;  // 50kph
-      leds[30] = CRGB::Yellow; // 60kph
-      leds[40] = CRGB::Yellow; // 80kph
-      leds[50] = CRGB::Green;  // 100kph
-
-      FastLED.show();
-
-      // Speedometer display End
-      break;
-
-    case 3:
-
-      FastLED.clear();
-
-      // Water Temp display Start (Only this is displayed on startup. Disappears when speed goes above 10kph)
-
-      // meter goes from 20 to 120
-      // 20-40c = too cold
-      // 40-70c = cold but OK
-      // 70-100c = OK
-      // 100-120c = too hot
-
-      // if engine temp is detected,
-      fill_solid(&leds[0], 12, CHSV(180, 255, 100));
-      fill_solid(&leds[12], 18, CHSV(250, 255, 100));
-      fill_solid(&leds[45], 15, CHSV(0, 255, 100));
-
-      //leds[engineTempMap] = CHSV(0, 0, 100);
-
-      if (engineTempRead > 105)
-      {
-        // flash red zone
+      // for right side, passive colour will be blue. active colour will be white/red tip
+      if (throttleRead >= 70) {
+          rightSideFillColour = CRGB(255,255,255);         
+      } else if (throttleRead > 40) {
+          uint8_t v = (uint8_t)((throttleRead - 40)*255L/30);
+          rightSideFillColour = CRGB(v,v,255);
+      } else {
+          rightSideFillColour = CRGB(0,0,255);
       }
 
-      FastLED.show();
+      fill_solid(&leds[30], rightSideMax-29, rightSideFillColour);
 
+      for (int i=0;i<6;i++) {
+        int curLED = rightSideMax-i;
+        if (curLED < 30) {break;}
+        uint8_t alpha = 255 - (i*51);
+        leds[curLED] = blend(leds[curLED], CRGB(255,0,0), alpha);
+      }
+
+      
+
+      // for left side, passive colour will be green, active colour is undetermined (white temp)
+      if (changeInKph > -0.6) {
+        leftSideFillColour = CRGB(0,255,0);
+      } else if (changeInKph > -2.0) {
+          // scale by 100 to avoid float 
+          // -60 = threshold, -200 = full white
+          int v = (int)(-changeInKph * 100 - 60) * 255 / 140;
+          v = constrain(v, 0, 255);
+          leftSideFillColour = CRGB(v, 255, v);
+      } else {
+        leftSideFillColour = CRGB(255,255,255);
+      }
+
+      fill_solid(&leds[leftSideMax], 30-leftSideMax, leftSideFillColour);
+
+      FastLED.show();
       break;
 
-      // Water Temp display End
+
     }
 
-    // compile every layer into one
-
-    // serial print
-
-    // Serial.print(rpmRead);
-    // Serial.println("rpm");
-
-    // Serial.print(kphRead);
-    // Serial.println("kph");
-    // Serial.println("");
+    // Serial.print(rpmRead); Serial.println("rpm");Serial.print(kphRead);Serial.println("kph");Serial.println("");
 
     // code
   }

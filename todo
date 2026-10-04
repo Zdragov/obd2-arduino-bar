@@ -15,3 +15,8 @@ LED Strip Assembly
 
 Casing for LED Strip
 LDR
+
+
+x\ =\ 30+\frac{a\cdot150}{1000}+\frac{\left(\left(\frac{b}{100}\right)^{2}\cdot6\right)}{980\cdot2}
+
+x\ =30+\left(d\cdot-15\right)
