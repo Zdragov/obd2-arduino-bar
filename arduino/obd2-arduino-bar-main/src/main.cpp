@@ -174,6 +174,8 @@ void loop()
       uint8_t shiftIndicator = constrain((rightSideMax - 55) * 255L / 4, 0, 255);
       rightSideFillColour = blend(rightSideFillColour, CRGB::Red, shiftIndicator);
 
+      fill_solid(&leds[30], rightSideMax - 29, rightSideFillColour);
+
 
       for (int i=0;i<6;i++) {
         int curLED = rightSideMax-i;
