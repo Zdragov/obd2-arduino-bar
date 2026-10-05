@@ -13,7 +13,7 @@ bufferSize = 256
 
 baud_rate = 38400
 
-serialPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"] #IMPORTANT, MAY NEED TO CHANGE THIS
+serialPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1", "COM3", "COM4", "COM5"] #IMPORTANT, MAY NEED TO CHANGE THIS
 
 outgaugeFormat = 'I3sxH2B7f2I3f15sx15sxi'
 outgaugeSize = struct.calcsize(outgaugeFormat)
